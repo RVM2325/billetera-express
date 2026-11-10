@@ -1,0 +1,2 @@
+# Este proyecto utiliza únicamente la librería estándar de Python 3 (sqlite3, http.server, hashlib, secrets).
+# No se requieren dependencias externas de pip.

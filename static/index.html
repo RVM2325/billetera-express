@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billetera Express - Control Financiero Familiar</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="h-full text-slate-800 antialiased flex flex-col font-['Inter']">
+
+  <!-- Navbar -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+      
+      <!-- Logo y Título -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2 rounded-xl shadow-inner text-xl">
+          🇵🇪
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Billetera Express
+            <span class="hidden sm:inline-block text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full font-medium">Multiusuario</span>
+          </h1>
+          <p class="text-xs text-indigo-200">Control de Finanzas y Presupuesto Personal</p>
+        </div>
+      </div>
+
+      <!-- Perfil de Usuario y Acciones -->
+      <div class="flex items-center space-x-3 text-sm">
+        <span id="fecha-actual" class="hidden md:inline-block text-xs bg-indigo-800/80 px-3 py-1.5 rounded-lg border border-indigo-700 text-indigo-200"></span>
+        
+        <!-- Bloque de usuario conectado -->
+        <div id="usuario-badge-container" class="hidden flex items-center gap-2 bg-indigo-800/90 border border-indigo-700/80 px-2.5 py-1 rounded-xl">
+          <span id="nav-user-icono" class="text-base">👤</span>
+          <span id="nav-user-nombre" class="font-semibold text-xs sm:text-sm text-white max-w-[120px] truncate">Usuario</span>
+          <button id="btn-cerrar-sesion" title="Cerrar sesión" class="ml-1 text-indigo-300 hover:text-rose-300 transition-colors p-1 rounded-lg hover:bg-indigo-700/60" aria-label="Salir">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Botón refrescar -->
+        <button id="btn-refrescar" title="Refrescar datos" class="p-2 bg-indigo-800 hover:bg-indigo-700 text-indigo-200 hover:text-white rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Saludo Personalizado del Dashboard -->
+  <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-1">
+      <div>
+        <h2 id="saludo-usuario" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <span>👋</span> ¡Hola!
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-500">Este es el resumen de tu billetera personal hoy.</p>
+      </div>
+      <div class="text-xs text-slate-400 font-medium">
+        Tus movimientos están 100% seguros y privados.
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
+
+    <!-- Tarjetas de Métricas -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Saldo Neto -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Saldo Disponible</span>
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">
+            💰
+          </div>
+        </div>
+        <div>
+          <h2 id="metrica-saldo" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">S/ 0.00</h2>
+          <p id="metrica-estado" class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            Calculado con tus movimientos
+          </p>
+        </div>
+      </div>
+
+      <!-- Ingresos -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tus Ingresos</span>
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold">
+            📈
+          </div>
+        </div>
+        <div>
+          <h2 id="metrica-ingresos" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">S/ 0.00</h2>
+          <p class="text-xs text-emerald-600/80 mt-1">Ingresos registrados</p>
+        </div>
+      </div>
+
+      <!-- Gastos -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tus Gastos</span>
+          <div class="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 font-bold">
+            📉
+          </div>
+        </div>
+        <div>
+          <h2 id="metrica-gastos" class="text-2xl sm:text-3xl font-extrabold text-rose-600 tracking-tight">S/ 0.00</h2>
+          <p class="text-xs text-rose-600/80 mt-1">Egresos registrados</p>
+        </div>
+      </div>
+
+      <!-- Total Movimientos -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between text-slate-500 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Movimientos</span>
+          <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 font-bold">
+            🧾
+          </div>
+        </div>
+        <div>
+          <h2 id="metrica-movimientos" class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">0</h2>
+          <p class="text-xs text-slate-500 mt-1">Operaciones procesadas</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección de Formulario y Gráfica -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Formulario de Registro (5 columnas en pantallas grandes) -->
+      <section class="lg:col-span-5 bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-3">
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>➕</span> Registrar Movimiento
+          </h3>
+          <span class="text-xs text-slate-400">En soles (S/.)</span>
+        </div>
+
+        <form id="form-transaccion" class="space-y-4">
+          <!-- Toggle Tipo: Ingreso / Gasto -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tipo de operación</label>
+            <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+              <button type="button" id="btn-tipo-gasto" class="tipo-btn py-2 text-xs font-bold rounded-lg transition-all duration-200 shadow-sm bg-rose-600 text-white" data-tipo="gasto">
+                📉 Gasto
+              </button>
+              <button type="button" id="btn-tipo-ingreso" class="tipo-btn py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900" data-tipo="ingreso">
+                📈 Ingreso
+              </button>
+            </div>
+            <input type="hidden" id="input-tipo" name="tipo" value="gasto">
+          </div>
+
+          <!-- Monto -->
+          <div>
+            <label for="input-monto" class="block text-xs font-semibold text-slate-600 mb-1.5">Monto (S/.)</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-medium text-sm">
+                S/
+              </div>
+              <input type="number" step="0.01" min="0.01" id="input-monto" name="monto" required placeholder="0.00" class="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white font-semibold text-slate-800">
+            </div>
+          </div>
+
+          <!-- Categoría -->
+          <div>
+            <label for="select-categoria" class="block text-xs font-semibold text-slate-600 mb-1.5">Categoría</label>
+            <select id="select-categoria" name="categoria" required class="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-700">
+              <option value="" disabled selected>Selecciona una categoría...</option>
+            </select>
+          </div>
+
+          <!-- Descripción -->
+          <div>
+            <label for="input-descripcion" class="block text-xs font-semibold text-slate-600 mb-1.5">Descripción o detalle</label>
+            <input type="text" id="input-descripcion" name="descripcion" required placeholder="Ej. Almuerzo menú, pasaje, venta de servicio..." class="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800">
+          </div>
+
+          <!-- Fecha -->
+          <div>
+            <label for="input-fecha" class="block text-xs font-semibold text-slate-600 mb-1.5">Fecha del movimiento</label>
+            <input type="date" id="input-fecha" name="fecha" required class="block w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-700">
+          </div>
+
+          <!-- Botón de Envío -->
+          <button type="submit" id="btn-guardar" class="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2">
+            <span>💾 Guardar Transacción</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Gráfico y Desglose de Gastos (7 columnas) -->
+      <section class="lg:col-span-7 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>📊</span> Distribución de Gastos
+          </h3>
+          <span class="text-xs text-slate-400">Por categorías</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center flex-1">
+          <!-- Canvas para Chart.js -->
+          <div class="relative flex items-center justify-center min-h-[220px]">
+            <canvas id="grafico-gastos" class="max-h-[220px]"></canvas>
+            <div id="grafico-vacio" class="hidden absolute text-center text-slate-400 text-xs">
+              <span class="text-3xl block mb-1">📭</span>
+              No hay gastos registrados aún.
+            </div>
+          </div>
+
+          <!-- Lista de progreso por categoría -->
+          <div id="lista-top-gastos" class="space-y-3 max-h-[240px] overflow-y-auto pr-1">
+            <p class="text-xs text-slate-400 text-center py-4">Cargando desglose...</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Historial de Transacciones -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>📋</span> Historial de Movimientos
+          </h3>
+          <p class="text-xs text-slate-400">Tus últimas transacciones registradas</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Filtro de tipo -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+            <button class="filtro-btn active px-3 py-1.5 rounded-lg text-slate-700 bg-white shadow-sm" data-filtro="todos">Todos</button>
+            <button class="filtro-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filtro="ingreso">Ingresos</button>
+            <button class="filtro-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filtro="gasto">Gastos</button>
+          </div>
+
+          <!-- Buscador -->
+          <div class="relative">
+            <input type="text" id="buscador-tabla" placeholder="Buscar por descripción..." class="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48 sm:w-56">
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Responsive -->
+      <div class="overflow-x-auto rounded-xl border border-slate-100">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold border-b border-slate-100">
+              <th class="py-3 px-4">Fecha</th>
+              <th class="py-3 px-4">Categoría</th>
+              <th class="py-3 px-4">Descripción</th>
+              <th class="py-3 px-4 text-right">Monto</th>
+              <th class="py-3 px-4 text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cuerpo" class="divide-y divide-slate-100 text-slate-700">
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Estado vacío de la tabla -->
+      <div id="tabla-vacia" class="hidden text-center py-10 text-slate-400">
+        <span class="text-4xl block mb-2">🧾</span>
+        <p class="text-sm font-medium">No se encontraron movimientos registrados.</p>
+        <p class="text-xs text-slate-400 mt-1">Registra tu primer ingreso o gasto desde el formulario de arriba.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL / PANTALLA DE AUTENTICACIÓN -->
+  <!-- ========================================== -->
+  <div id="modal-auth" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+      
+      <!-- Encabezado Modal -->
+      <div class="bg-indigo-900 text-white p-6 text-center relative">
+        <div class="inline-flex p-3 rounded-2xl bg-indigo-700/80 mb-2 text-2xl shadow-inner">
+          🇵🇪 💰
+        </div>
+        <h2 class="text-xl font-extrabold text-white">Billetera Express</h2>
+        <p class="text-xs text-indigo-200 mt-0.5">Accede a tus finanzas personales privadas</p>
+
+        <!-- Pestañas Login / Registro -->
+        <div class="grid grid-cols-2 gap-1 bg-indigo-950/60 p-1 rounded-xl mt-5">
+          <button type="button" id="tab-login" class="py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-sm transition-all">
+            Iniciar Sesión
+          </button>
+          <button type="button" id="tab-registro" class="py-2 text-xs font-bold rounded-lg text-indigo-300 hover:text-white transition-all">
+            Crear Cuenta
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido de las Pestañas -->
+      <div class="p-6">
+        
+        <!-- Formulario Iniciar Sesión -->
+        <form id="form-login" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Usuario</label>
+            <input type="text" id="login-username" required placeholder="ej. raul" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña</label>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          
+          <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all">
+            Ingresar a mi Billetera
+          </button>
+
+          <!-- Acceso rápido familiar para pruebas -->
+          <div class="pt-3 border-t border-slate-100">
+            <span class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center mb-2">Acceso rápido para la familia (Demo)</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" class="btn-demo-login py-1.5 px-2 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-xs font-medium rounded-lg text-slate-700 transition-colors" data-user="raul">
+                👨‍💻 Raúl
+              </button>
+              <button type="button" class="btn-demo-login py-1.5 px-2 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-xs font-medium rounded-lg text-slate-700 transition-colors" data-user="mama">
+                👩 Mamá
+              </button>
+              <button type="button" class="btn-demo-login py-1.5 px-2 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-xs font-medium rounded-lg text-slate-700 transition-colors" data-user="papa">
+                👨 Papá
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400 text-center mt-1.5">(Clave demo por defecto: <code class="text-indigo-600">123456</code>)</p>
+          </div>
+        </form>
+
+        <!-- Formulario Crear Cuenta (oculto por defecto) -->
+        <form id="form-registro" class="space-y-3.5 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tu Nombre</label>
+            <input type="text" id="reg-nombre" required placeholder="ej. María Vía" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Usuario (para iniciar sesión)</label>
+            <input type="text" id="reg-username" required placeholder="ej. maria (mínimo 3 letras)" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Elige tu Avatar</label>
+            <div class="flex items-center gap-2 overflow-x-auto py-1">
+              <label class="cursor-pointer">
+                <input type="radio" name="reg-icono" value="👤" checked class="peer sr-only">
+                <span class="inline-block p-2 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 text-xl transition-all">👤</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="reg-icono" value="👩" class="peer sr-only">
+                <span class="inline-block p-2 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 text-xl transition-all">👩</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="reg-icono" value="👨" class="peer sr-only">
+                <span class="inline-block p-2 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 text-xl transition-all">👨</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="reg-icono" value="👨‍💻" class="peer sr-only">
+                <span class="inline-block p-2 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 text-xl transition-all">👨‍💻</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="reg-icono" value="👧" class="peer sr-only">
+                <span class="inline-block p-2 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 text-xl transition-all">👧</span>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="reg-icono" value="😎" class="peer sr-only">
+                <span class="inline-block p-2 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 text-xl transition-all">😎</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña</label>
+            <input type="password" id="reg-password" required placeholder="mínimo 4 caracteres" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          
+          <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all">
+            Registrar mi Cuenta
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificaciones Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white">
+  </div>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    Billetera Express &copy; 2026 &bull; Soporte Multiusuario &bull; Python + SQLite + Tailwind CSS
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
